@@ -1,0 +1,18 @@
+import { defineConfig } from 'drizzle-kit';
+
+// Node 22+: baca file .env tanpa perlu package dotenv
+try {
+	process.loadEnvFile();
+} catch {
+	// .env tidak ada (misal di CI) — pakai environment variable sistem
+}
+
+export default defineConfig({
+	schema: './src/lib/server/db/schema.ts',
+	out: './drizzle',
+	dialect: 'turso',
+	dbCredentials: {
+		url: process.env.TURSO_DATABASE_URL || 'file:local.db',
+		authToken: process.env.TURSO_AUTH_TOKEN || undefined
+	}
+});

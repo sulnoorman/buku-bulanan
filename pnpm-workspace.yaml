@@ -1,0 +1,3 @@
+# Izinkan esbuild menjalankan build script (dibutuhkan Vite & drizzle-kit)
+allowBuilds:
+  esbuild: true
