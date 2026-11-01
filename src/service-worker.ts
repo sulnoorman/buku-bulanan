@@ -9,16 +9,22 @@ const sw = self as unknown as ServiceWorkerGlobalScope;
 const CACHE = `cache-${version}`;
 const ASSETS = [...build, ...files];
 
-// Install: simpan aset statis (JS/CSS/icon) ke cache
+// Install: simpan aset statis (JS/CSS/icon) ke cache & langsung aktifkan
 sw.addEventListener('install', (event) => {
-	event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(ASSETS)));
+	event.waitUntil(
+		caches
+			.open(CACHE)
+			.then((cache) => cache.addAll(ASSETS))
+			.then(() => sw.skipWaiting())
+	);
 });
 
-// Activate: hapus cache versi lama
+// Activate: hapus cache versi lama & ambil alih halaman saat ini
 sw.addEventListener('activate', (event) => {
 	event.waitUntil(
 		caches.keys().then(async (keys) => {
 			for (const key of keys) if (key !== CACHE) await caches.delete(key);
+			await sw.clients.claim();
 		})
 	);
 });

@@ -1,10 +1,44 @@
 <script lang="ts">
 	import '../app.css';
+	import { onMount } from 'svelte';
 	import { page } from '$app/state';
 	import { APP_NAME } from '$lib/utils/constants';
-	import { IconLayoutDashboard, IconReceipt2, IconShoppingCart, IconHistory } from '@tabler/icons-svelte';
+	import { Button } from '$components/ui/button';
+	import {
+		IconLayoutDashboard,
+		IconReceipt2,
+		IconShoppingCart,
+		IconHistory,
+		IconDownload
+	} from '@tabler/icons-svelte';
 
 	let { children } = $props();
+
+	interface BeforeInstallPromptEvent extends Event {
+		prompt: () => Promise<void>;
+		userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
+	}
+
+	let deferredPrompt = $state<BeforeInstallPromptEvent | null>(null);
+
+	onMount(() => {
+		const handler = (e: Event) => {
+			e.preventDefault();
+			deferredPrompt = e as BeforeInstallPromptEvent;
+		};
+		window.addEventListener('beforeinstallprompt', handler);
+		window.addEventListener('appinstalled', () => {
+			deferredPrompt = null;
+		});
+		return () => window.removeEventListener('beforeinstallprompt', handler);
+	});
+
+	async function installApp() {
+		if (!deferredPrompt) return;
+		await deferredPrompt.prompt();
+		const { outcome } = await deferredPrompt.userChoice;
+		if (outcome === 'accepted') deferredPrompt = null;
+	}
 
 	const nav = [
 		{ href: '/', label: 'Dashboard', icon: IconLayoutDashboard },
@@ -39,6 +73,15 @@
 					</a>
 				{/each}
 			</nav>
+
+			{#if deferredPrompt}
+				<div class="ml-auto">
+					<Button variant="outline" size="sm" onclick={installApp}>
+						<IconDownload />
+						Install App
+					</Button>
+				</div>
+			{/if}
 		</div>
 	</header>
 
