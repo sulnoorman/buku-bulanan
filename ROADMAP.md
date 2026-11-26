@@ -27,7 +27,7 @@
 - [ ] Format jatuh tempo kompleks (minggu ke-N, hari tertentu) / input rumus
 - [ ] Analitik tren pengeluaran per bulan + chart per kategori
 - [ ] Export PDF/CSV rekap bulanan
-- [ ] Dark/Light mode
+- [x] Dark/Light mode (Soft Dimmed Slate Charcoal)
 - [ ] Custom kategori pengeluaran
 - [ ] Auto-expire tagihan (berlaku sampai bulan X, misal cicilan 6 bulan)
 - [ ] Tagihan bertahap dengan nominal fleksibel per bagian (misal minggu ini 450rb, bukan 500rb)

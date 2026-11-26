@@ -2,21 +2,22 @@
 	import { tv, type VariantProps } from 'tailwind-variants';
 
 	export const buttonVariants = tv({
-		base: 'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:size-4 [&_svg]:shrink-0',
+		base: 'inline-flex items-center justify-center gap-gap-btn whitespace-nowrap rounded-control text-sm font-medium transition-all duration-150 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:size-icon-base [&_svg]:shrink-0',
 		variants: {
 			variant: {
 				default: 'bg-primary text-primary-foreground hover:bg-primary/90',
 				destructive: 'bg-destructive text-destructive-foreground hover:bg-destructive/90',
-				outline: 'border border-input bg-background hover:bg-accent hover:text-accent-foreground',
+				outline: 'border border-input bg-card hover:bg-accent hover:text-accent-foreground',
 				secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
 				ghost: 'hover:bg-accent hover:text-accent-foreground',
 				link: 'text-primary underline-offset-4 hover:underline'
 			},
 			size: {
-				default: 'h-9 px-4',
-				sm: 'h-8 px-3 text-xs',
-				lg: 'h-10 px-6',
-				icon: 'size-9'
+				default: 'h-control-base px-btn-x-base',
+				sm: 'h-control-sm px-btn-x-sm text-xs [&_svg]:size-icon-sm',
+				lg: 'h-control-lg px-btn-x-lg',
+				icon: 'size-control-base aspect-square p-0',
+				'icon-sm': 'size-control-sm aspect-square p-0 [&_svg]:size-icon-sm'
 			}
 		},
 		defaultVariants: { variant: 'default', size: 'default' }

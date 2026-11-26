@@ -1,10 +1,11 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { Card } from '$components/ui/card';
 	import { Button } from '$components/ui/button';
 	import { Badge } from '$components/ui/badge';
 	import * as Dialog from '$components/ui/dialog';
 	import { formatRupiah } from '$lib/utils/format';
-	import { IconTrash, IconLoader2 } from '@tabler/icons-svelte';
+	import { IconTrash, IconLoader2, IconX } from '@tabler/icons-svelte';
 	import type { Income } from './income.schema';
 
 	let { incomes }: { incomes: Income[] } = $props();
@@ -19,52 +20,54 @@
 	}
 </script>
 
-<ul class="divide-y rounded-lg border">
+<Card padding="none" class="divide-y">
 	{#each incomes as income (income.id)}
-		<li class="flex items-start justify-between gap-3 px-4 py-3 sm:items-center">
-			<div class="min-w-0 flex-1">
+		<div class="flex items-start justify-between gap-stack-base p-card-base sm:items-center">
+			<div class="min-w-0 flex-1 space-y-stack-xs">
 				<p class="font-medium leading-snug">{income.label}</p>
-				<div class="mt-1 sm:hidden">
+				<div class="sm:hidden">
 					<Badge variant={income.type === 'PRIMARY' ? 'secondary' : 'outline'}>
 						{income.type === 'PRIMARY' ? 'Utama' : 'Ekstra'}
 					</Badge>
 				</div>
 			</div>
-			<Badge variant={income.type === 'PRIMARY' ? 'secondary' : 'outline'} class="hidden sm:inline-flex">
+			<Badge
+				variant={income.type === 'PRIMARY' ? 'secondary' : 'outline'}
+				class="hidden sm:inline-flex"
+			>
 				{income.type === 'PRIMARY' ? 'Utama' : 'Ekstra'}
 			</Badge>
-			<div class="flex shrink-0 items-center gap-2.5">
-				<p class="text-right text-sm font-semibold tabular-nums text-emerald-700 sm:w-28 sm:font-medium">
-					+ {formatRupiah(income.amount)}
+			<div class="flex shrink-0 items-center gap-stack-base">
+				<p class="text-right font-mono text-sm font-semibold tracking-tight tabular-nums text-emerald-700 dark:text-emerald-400">
+					+{formatRupiah(income.amount)}
 				</p>
 				<!-- Pemasukan utama tidak bisa dihapus agar siklus selalu punya basis -->
 				{#if income.type === 'EXTRA'}
 					<Button
 						variant="destructive"
-						size="icon"
-						class="size-7"
+						size="sm"
 						disabled={deletingId === income.id}
 						onclick={() => askDelete(income)}
 						title="Hapus pemasukan ekstra"
 					>
-						<IconTrash class="size-3.5" />
+						<IconTrash />
+						Hapus
 					</Button>
-				{:else}
-					<span class="hidden w-7 sm:inline-block"></span>
 				{/if}
 			</div>
-		</li>
+		</div>
 	{/each}
-</ul>
+</Card>
 
 <!-- Dialog Konfirmasi Hapus Pemasukan Ekstra -->
 <Dialog.Root bind:open={confirmOpen}>
 	<Dialog.Content>
-		<div class="space-y-1">
-			<Dialog.Title class="text-lg font-semibold">Hapus Pemasukan Ekstra?</Dialog.Title>
+		<div class="space-y-stack-xs">
+			<Dialog.Title class="text-lg font-semibold tracking-tight">Hapus Pemasukan Ekstra?</Dialog.Title>
 			<Dialog.Description class="text-sm text-muted-foreground">
 				Yakin ingin menghapus pemasukan <strong class="text-foreground">{confirmTarget?.label}</strong>
-				({confirmTarget ? formatRupiah(confirmTarget.amount) : ''})? Nilai Safe-to-Spend akan otomatis berkurang.
+				(<span class="font-mono">{confirmTarget ? formatRupiah(confirmTarget.amount) : ''}</span>)?
+				Nilai Safe-to-Spend akan otomatis berkurang.
 			</Dialog.Description>
 		</div>
 		{#if confirmTarget}
@@ -79,7 +82,7 @@
 						confirmOpen = false;
 					};
 				}}
-				class="flex justify-end gap-2 pt-3"
+				class="flex justify-end gap-stack-sm pt-stack-sm"
 			>
 				<input type="hidden" name="id" value={confirmTarget.id} />
 				<Button
@@ -88,6 +91,7 @@
 					onclick={() => (confirmOpen = false)}
 					disabled={deletingId !== null}
 				>
+					<IconX />
 					Batal
 				</Button>
 				<Button type="submit" variant="destructive" disabled={deletingId !== null}>

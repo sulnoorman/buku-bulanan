@@ -13,7 +13,9 @@
 		IconDownload,
 		IconLoader2,
 		IconWifiOff,
-		IconWifi
+		IconWifi,
+		IconMoon,
+		IconSun
 	} from '@tabler/icons-svelte';
 
 	let { children } = $props();
@@ -25,7 +27,22 @@
 
 	let deferredPrompt = $state<BeforeInstallPromptEvent | null>(null);
 	let connectionToast = $state<'offline' | 'online' | null>(null);
+	let isDark = $state(false);
 	let toastTimer: ReturnType<typeof setTimeout> | undefined;
+
+	function applyTheme(dark: boolean) {
+		isDark = dark;
+		document.documentElement.classList.toggle('dark', dark);
+		const meta = document.getElementById('meta-theme-color');
+		if (meta) meta.setAttribute('content', dark ? '#212734' : '#ffffff');
+		try {
+			localStorage.setItem('bb-theme', dark ? 'dark' : 'light');
+		} catch {}
+	}
+
+	function toggleTheme() {
+		applyTheme(!isDark);
+	}
 
 	function showConnectionToast(kind: 'offline' | 'online') {
 		clearTimeout(toastTimer);
@@ -36,6 +53,8 @@
 	}
 
 	onMount(() => {
+		isDark = document.documentElement.classList.contains('dark');
+
 		const handler = (e: Event) => {
 			e.preventDefault();
 			deferredPrompt = e as BeforeInstallPromptEvent;
@@ -95,43 +114,61 @@
 	<title>{APP_NAME}</title>
 </svelte:head>
 
-<div class="min-h-screen pb-20 md:pb-0">
-	<header class="sticky top-0 z-40 border-b bg-background">
+<div class="min-h-screen pb-bottom-nav md:pb-0">
+	<header class="sticky top-0 z-40 border-b bg-card/95 backdrop-blur-sm">
 		{#if isNavigating}
 			<div class="absolute inset-x-0 top-0 h-0.5 overflow-hidden bg-muted">
 				<div class="h-full w-2/3 animate-pulse bg-primary"></div>
 			</div>
 		{/if}
-		<div class="mx-auto flex h-14 max-w-5xl items-center gap-6 px-4">
-			<a href="/" class="flex items-center gap-2 font-semibold">
+		<div class="mx-auto flex h-header max-w-5xl items-center gap-stack-lg px-page-x">
+			<a href="/" class="flex items-center gap-stack-sm font-semibold tracking-tight">
 				{APP_NAME}
 				{#if isNavigating}
-					<IconLoader2 class="size-4 animate-spin text-muted-foreground" />
+					<IconLoader2 class="size-icon-base animate-spin text-muted-foreground" />
 				{/if}
 			</a>
 			<!-- Navigasi desktop -->
-			<nav class="hidden gap-1 md:flex">
+			<nav class="hidden gap-stack-xs md:flex">
 				{#each nav as item (item.href)}
 					<a
 						href={item.href}
-						class="flex items-center gap-2 rounded-md px-3 py-1.5 text-sm transition-colors {isActive(item.href)
+						class="inline-flex h-control-sm items-center gap-gap-btn rounded-control px-btn-x-sm text-sm transition-colors {isActive(
+							item.href
+						)
 							? 'bg-accent font-medium text-foreground'
 							: 'text-muted-foreground hover:text-foreground'}"
 					>
-						<item.icon class="size-4" />
+						<item.icon class="size-icon-base" />
 						{item.label}
 					</a>
 				{/each}
 			</nav>
 
-			{#if deferredPrompt}
-				<div class="ml-auto">
+			<!-- Aksi Header Kanan (Paritas Tombol: sama-sama Button variant="outline" size="sm" dengan Ikon + Teks) -->
+			<div class="ml-auto flex items-center gap-stack-sm">
+				<Button
+					variant="outline"
+					size="sm"
+					onclick={toggleTheme}
+					title={isDark ? 'Beralih ke mode terang' : 'Beralih ke mode gelap'}
+				>
+					{#if isDark}
+						<IconSun />
+						<span>Terang</span>
+					{:else}
+						<IconMoon />
+						<span>Gelap</span>
+					{/if}
+				</Button>
+
+				{#if deferredPrompt}
 					<Button variant="outline" size="sm" onclick={installApp}>
 						<IconDownload />
-						Install App
+						<span>Install App</span>
 					</Button>
-				</div>
-			{/if}
+				{/if}
+			</div>
 		</div>
 	</header>
 
@@ -140,27 +177,31 @@
 		<div
 			role="status"
 			aria-live="polite"
-			class="fixed left-1/2 top-16 z-50 flex -translate-x-1/2 items-center gap-2 rounded-full px-4 py-2 text-xs font-medium shadow-md transition-all {connectionToast ===
+			class="fixed left-1/2 top-header z-50 mt-stack-sm flex -translate-x-1/2 items-center gap-gap-btn rounded-control px-btn-x-base py-stack-xs text-xs font-medium transition-all {connectionToast ===
 			'offline'
 				? 'bg-amber-600 text-white'
 				: 'bg-emerald-600 text-white'}"
 		>
 			{#if connectionToast === 'offline'}
-				<IconWifiOff class="size-4 shrink-0" />
+				<IconWifiOff class="size-icon-base shrink-0" />
 				<span>Anda sedang offline</span>
 			{:else}
-				<IconWifi class="size-4 shrink-0" />
+				<IconWifi class="size-icon-base shrink-0" />
 				<span>Kembali online</span>
 			{/if}
 		</div>
 	{/if}
 
-	<main class="mx-auto max-w-5xl px-4 py-6 transition-opacity {isNavigating ? 'opacity-60' : ''}">
+	<main
+		class="mx-auto max-w-5xl px-page-x py-section-base transition-opacity {isNavigating
+			? 'opacity-60'
+			: ''}"
+	>
 		{@render children()}
 	</main>
 
 	<!-- Navigasi bawah untuk mobile (terasa seperti app native saat di-install sebagai PWA) -->
-	<nav class="fixed inset-x-0 bottom-0 z-40 grid grid-cols-4 border-t bg-background md:hidden">
+	<nav class="fixed inset-x-0 bottom-0 z-40 grid grid-cols-4 border-t bg-card/95 backdrop-blur-sm md:hidden">
 		{#each nav as item (item.href)}
 			{@const targetLoading =
 				isNavigating &&
@@ -169,14 +210,16 @@
 					: navigating.to?.url.pathname.startsWith(item.href))}
 			<a
 				href={item.href}
-				class="flex flex-col items-center gap-1 py-2 text-[11px] transition-colors {isActive(item.href)
-					? 'font-medium text-foreground'
+				class="flex flex-col items-center gap-stack-xs py-stack-sm text-[11px] transition-colors {isActive(
+					item.href
+				)
+					? 'font-semibold text-foreground'
 					: 'text-muted-foreground'}"
 			>
 				{#if targetLoading}
-					<IconLoader2 class="size-5 animate-spin" />
+					<IconLoader2 class="size-icon-md animate-spin" />
 				{:else}
-					<item.icon class="size-5" />
+					<item.icon class="size-icon-md" />
 				{/if}
 				{item.label}
 			</a>

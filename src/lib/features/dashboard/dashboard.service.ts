@@ -32,6 +32,7 @@ export function buildCycleSummary(
 	const doneCount = bills.filter((b) => b.status === 'PAID').length;
 
 	const totalIncome = sum(incomes);
+	const totalBills = sum(bills);
 	const totalPaid = bills.reduce((s, b) => s + b.paidAmount, 0);
 	const totalUnpaid = bills.reduce((s, b) => s + b.remainingAmount, 0);
 	const totalExpenses = sum(expenses);
@@ -44,6 +45,7 @@ export function buildCycleSummary(
 		expenses,
 		totals: {
 			income: totalIncome,
+			bills: totalBills,
 			paid: totalPaid,
 			unpaid: totalUnpaid,
 			expenses: totalExpenses,

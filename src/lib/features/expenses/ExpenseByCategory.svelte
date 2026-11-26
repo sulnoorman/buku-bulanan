@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { Card } from '$components/ui/card';
 	import { formatRupiah } from '$lib/utils/format';
 	import type { Expense } from './expense.schema';
 
@@ -14,23 +15,32 @@
 </script>
 
 {#if total > 0}
-	<section class="rounded-lg border p-4">
-		<div class="flex items-baseline justify-between">
-			<p class="text-sm text-muted-foreground">Total pengeluaran</p>
-			<p class="text-lg font-semibold tabular-nums">{formatRupiah(total)}</p>
+	<Card as="section" padding="base">
+		<div class="flex items-baseline justify-between gap-stack-sm">
+			<p class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+				Total Pengeluaran
+			</p>
+			<p class="font-mono text-lg font-bold tracking-tight tabular-nums">
+				{formatRupiah(total)}
+			</p>
 		</div>
-		<ul class="mt-3 space-y-2">
+		<ul class="mt-stack-base space-y-stack-sm">
 			{#each byCategory as [category, amount] (category)}
-				<li class="text-sm">
+				<li class="space-y-stack-xs text-sm">
 					<div class="flex justify-between">
-						<span>{category}</span>
-						<span class="tabular-nums text-muted-foreground">{formatRupiah(amount)}</span>
+						<span class="font-medium">{category}</span>
+						<span class="font-mono text-xs text-muted-foreground tabular-nums">
+							{formatRupiah(amount)}
+						</span>
 					</div>
-					<div class="mt-1 h-1.5 rounded-full bg-muted">
-						<div class="h-full rounded-full bg-foreground/70" style="width: {(amount / total) * 100}%"></div>
+					<div class="h-progress overflow-hidden rounded-full bg-muted">
+						<div
+							class="h-full rounded-full bg-foreground/75 transition-all duration-300"
+							style="width: {(amount / total) * 100}%"
+						></div>
 					</div>
 				</li>
 			{/each}
 		</ul>
-	</section>
+	</Card>
 {/if}

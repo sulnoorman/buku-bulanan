@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { Card } from '$components/ui/card';
 	import { formatRupiah } from '$lib/utils/format';
 	import { IconAlertTriangle } from '@tabler/icons-svelte';
 	import type { BillView } from '$features/bills/bill.service';
@@ -10,15 +11,18 @@
 </script>
 
 {#if urgent.length > 0}
-	<div class="flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 p-4 text-sm">
-		<IconAlertTriangle class="mt-0.5 size-5 shrink-0 text-red-600" />
-		<div>
-			<p class="font-semibold text-red-900">
-				{urgent.length} tagihan perlu dibayar segera · {formatRupiah(total)}
+	<Card variant="danger" padding="base" class="flex items-start gap-stack-base text-sm">
+		<IconAlertTriangle class="size-icon-md shrink-0 text-red-600 dark:text-red-400" />
+		<div class="space-y-stack-xs">
+			<p class="font-semibold tracking-tight">
+				{urgent.length} tagihan perlu perhatian segera ·
+				<span class="font-mono tabular-nums">{formatRupiah(total)}</span>
 			</p>
-			<p class="text-red-800">
-				{urgent.map((b) => (b.daysLeft < 0 ? `${b.name} (lewat ${-b.daysLeft} hari)` : b.name)).join(', ')}
+			<p class="text-xs opacity-90">
+				{urgent
+					.map((b) => (b.daysLeft < 0 ? `${b.name} (lewat ${-b.daysLeft} hari)` : b.name))
+					.join(', ')}
 			</p>
 		</div>
-	</div>
+	</Card>
 {/if}

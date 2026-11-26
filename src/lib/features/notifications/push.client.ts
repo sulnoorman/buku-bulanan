@@ -70,6 +70,7 @@ export async function sendTestNotification() {
 	const registration = await navigator.serviceWorker.ready;
 	await registration.showNotification('Buku Bulanan', {
 		body: 'Notifikasi berhasil diaktifkan.',
-		icon: '/icon-192.png'
+		icon: '/icon-192.png',
+		badge: '/badge-96.png'
 	});
 }

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { Card } from '$components/ui/card';
 	import { Button } from '$components/ui/button';
 	import ExpenseList from '$features/expenses/ExpenseList.svelte';
 	import ExpenseForm from '$features/expenses/ExpenseForm.svelte';
@@ -12,14 +13,19 @@
 
 <svelte:head><title>Pengeluaran · Buku Bulanan</title></svelte:head>
 
-<div class="space-y-6">
-	<div class="flex items-end justify-between gap-4">
-		<div>
-			<h1 class="text-xl font-semibold">Pengeluaran</h1>
-			<p class="text-sm text-muted-foreground">Pengeluaran harian di luar tagihan wajib, siklus berjalan.</p>
+<div class="space-y-stack-lg">
+	<div class="flex items-end justify-between gap-stack-md">
+		<div class="space-y-stack-xs">
+			<h1 class="text-xl font-bold tracking-tight">Pengeluaran</h1>
+			<p class="text-sm text-muted-foreground">
+				Pengeluaran harian di luar tagihan wajib, siklus berjalan.
+			</p>
 		</div>
 		{#if data.hasActiveCycle}
-			<Button onclick={() => (formOpen = true)}><IconPlus /> Catat</Button>
+			<Button size="sm" onclick={() => (formOpen = true)}>
+				<IconPlus />
+				Catat
+			</Button>
 		{/if}
 	</div>
 
@@ -27,9 +33,9 @@
 		<ExpenseByCategory expenses={data.expenses} />
 		<ExpenseList expenses={data.expenses} />
 	{:else}
-		<p class="rounded-lg border border-dashed py-12 text-center text-sm text-muted-foreground">
+		<Card variant="dashed" padding="lg" class="py-section-lg">
 			Belum ada siklus aktif. Mulai siklus dari <a href="/" class="underline">Dashboard</a>.
-		</p>
+		</Card>
 	{/if}
 </div>
 

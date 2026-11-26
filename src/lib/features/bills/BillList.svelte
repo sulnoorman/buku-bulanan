@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { Card } from '$components/ui/card';
 	import BillRow from './BillRow.svelte';
 	import type { BillView } from './bill.service';
 
@@ -14,11 +15,11 @@
 </script>
 
 {#if bills.length === 0}
-	<p class="rounded-lg border border-dashed py-8 text-center text-sm text-muted-foreground">
+	<Card variant="dashed" padding="lg" class="py-section-lg">
 		Belum ada tagihan di siklus ini. Tambahkan di menu <a href="/tagihan" class="underline">Tagihan</a>.
-	</p>
+	</Card>
 {:else}
-	<ul class="space-y-2.5 sm:space-y-0 sm:divide-y sm:rounded-lg sm:border">
+	<ul class="space-y-stack-base sm:space-y-0 sm:divide-y sm:rounded-card sm:border sm:bg-card">
 		{#each sorted as bill (bill.id)}
 			<BillRow {bill} />
 		{/each}

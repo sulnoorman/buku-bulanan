@@ -69,7 +69,7 @@ sw.addEventListener('push', (event) => {
 		sw.registration.showNotification(data.title ?? 'Buku Bulanan', {
 			body: data.body ?? 'Ada tagihan yang mendekati jatuh tempo.',
 			icon: '/icon-192.png',
-			badge: '/icon-192.png',
+			badge: '/badge-96.png',
 			data: { url: data.url ?? '/' }
 		})
 	);

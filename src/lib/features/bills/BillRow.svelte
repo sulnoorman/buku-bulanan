@@ -10,7 +10,8 @@
 		IconCheck,
 		IconPlayerSkipForward,
 		IconArrowBackUp,
-		IconLoader2
+		IconLoader2,
+		IconX
 	} from '@tabler/icons-svelte';
 	import type { BillView } from './bill.service';
 
@@ -53,11 +54,10 @@
 </script>
 
 <li
-	class="rounded-lg border p-3.5 sm:rounded-none sm:border-0 sm:px-4 sm:py-3 {bill.urgency ===
-	'overdue'
-		? 'border-red-200 bg-red-50/60'
+	class="rounded-card border p-card-base sm:rounded-none sm:border-0 {bill.urgency === 'overdue'
+		? 'border-red-300/80 bg-red-50/70 dark:border-red-500/30 dark:bg-red-950/25'
 		: bill.urgency === 'soon'
-			? 'border-amber-200 bg-amber-50/60'
+			? 'border-amber-300/80 bg-amber-50/70 dark:border-amber-500/30 dark:bg-amber-950/25'
 			: 'bg-card sm:bg-transparent'}"
 >
 	<form
@@ -75,14 +75,14 @@
 				pendingAction = null;
 			};
 		}}
-		class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-3 sm:gap-y-2"
+		class="flex flex-col gap-stack-base sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-stack-base sm:gap-y-stack-sm"
 	>
 		<input type="hidden" name="id" value={bill.id} />
 
 		<!-- Info tagihan & Nominal (Mobile: atas-bawah rapi, Desktop: kiri-tengah) -->
-		<div class="flex items-start justify-between gap-3 sm:min-w-0 sm:flex-1">
-			<div class="min-w-0 flex-1">
-				<div class="flex flex-wrap items-center gap-1.5">
+		<div class="flex items-start justify-between gap-stack-base sm:min-w-0 sm:flex-1">
+			<div class="min-w-0 flex-1 space-y-stack-xs">
+				<div class="flex flex-wrap items-center gap-stack-xs">
 					<p class="font-medium leading-snug {isDone ? 'text-muted-foreground line-through' : ''}">
 						{bill.name}
 					</p>
@@ -94,9 +94,9 @@
 					</Badge>
 				</div>
 
-				<p class="mt-1 text-xs text-muted-foreground">
+				<p class="font-mono text-xs text-muted-foreground">
 					{#if isInstallment}
-						Jatuh tempo {formatTanggalPendek(bill.dueDate)} · {bill.paidCount}/{bill.installments} dibayar
+						Tgl {formatTanggalPendek(bill.dueDate)} · {bill.paidCount}/{bill.installments} dibayar
 						{#if bill.skippedCount > 0}· {bill.skippedCount} dilewati{/if}
 						{#if !isDone}· sisa {formatRupiah(bill.remainingAmount)}{/if}
 					{:else}
@@ -105,10 +105,10 @@
 				</p>
 
 				{#if isInstallment}
-					<div class="mt-2 flex max-w-56 gap-1.5">
+					<div class="flex max-w-56 gap-stack-xs pt-stack-xs">
 						{#each segments as segment, i (i)}
 							<span
-								class="h-1.5 flex-1 rounded-full {segment === 'paid'
+								class="h-progress flex-1 rounded-full {segment === 'paid'
 									? 'bg-emerald-600'
 									: segment === 'skipped'
 										? 'bg-muted-foreground/40'
@@ -120,7 +120,7 @@
 			</div>
 
 			<!-- Nominal di Mobile (kanan atas card) -->
-			<p class="shrink-0 text-right text-sm font-semibold tabular-nums sm:hidden">
+			<p class="shrink-0 text-right font-mono text-sm font-semibold tracking-tight tabular-nums sm:hidden">
 				{bill.isVariable && !isDone ? '~' : ''}{formatRupiah(bill.amount)}
 			</p>
 		</div>
@@ -130,56 +130,58 @@
 			{dueLabel}
 		</Badge>
 
-		<p class="hidden w-28 text-right text-sm font-medium tabular-nums sm:block">
+		<p class="hidden text-right font-mono text-sm font-semibold tracking-tight tabular-nums sm:block">
 			{bill.isVariable && !isDone ? '~' : ''}{formatRupiah(bill.amount)}
 		</p>
 
-		<!-- Baris Aksi (Mobile: footer card dengan tombol lega, Desktop: di sisi kanan) -->
+		<!-- Baris Aksi (Paritas Tombol Ketat: semua tombol memakai Button size="sm" dengan Ikon + Teks) -->
 		{#if !isDone || bill.paidCount > 0 || bill.skippedCount > 0}
 			<div
-				class="flex flex-wrap items-center justify-between gap-2 border-t pt-2.5 sm:border-0 sm:pt-0"
+				class="flex flex-wrap items-center justify-between gap-stack-sm border-t pt-stack-base sm:border-0 sm:pt-0"
 			>
-				<!-- Tombol Batal kalau salah klik (di kiri pada mobile) -->
-				<div class="flex items-center gap-3 text-xs text-muted-foreground sm:hidden">
+				<!-- Tombol Batal di Mobile -->
+				<div class="flex items-center gap-stack-xs sm:hidden">
 					{#if bill.paidCount > 0}
-						<button
+						<Button
 							type="submit"
+							variant="ghost"
+							size="sm"
 							name="kind"
 							value="pay"
 							formaction="/?/undoBill"
 							disabled={pendingAction !== null}
-							class="inline-flex items-center gap-1 hover:text-foreground disabled:opacity-50"
 						>
 							{#if pendingAction === 'undo-pay'}
-								<IconLoader2 class="size-3.5 animate-spin" />
+								<IconLoader2 class="animate-spin" />
 							{:else}
-								<IconArrowBackUp class="size-3.5" />
+								<IconArrowBackUp />
 							{/if}
 							Batal bayar
-						</button>
+						</Button>
 					{/if}
 					{#if bill.skippedCount > 0}
-						<button
+						<Button
 							type="submit"
+							variant="ghost"
+							size="sm"
 							name="kind"
 							value="skip"
 							formaction="/?/undoBill"
 							disabled={pendingAction !== null}
-							class="inline-flex items-center gap-1 hover:text-foreground disabled:opacity-50"
 						>
 							{#if pendingAction === 'undo-skip'}
-								<IconLoader2 class="size-3.5 animate-spin" />
+								<IconLoader2 class="animate-spin" />
 							{:else}
-								<IconArrowBackUp class="size-3.5" />
+								<IconArrowBackUp />
 							{/if}
 							Batal lewati
-						</button>
+						</Button>
 					{/if}
 				</div>
 
 				<!-- Tombol Lewati & Bayar -->
 				{#if !isDone}
-					<div class="ml-auto flex items-center gap-1.5">
+					<div class="ml-auto flex items-center gap-stack-sm">
 						<Button
 							type="submit"
 							variant="outline"
@@ -230,42 +232,44 @@
 			</div>
 		{/if}
 
-		<!-- Tombol Batal di Desktop (baris kedua di kanan bawah) -->
+		<!-- Tombol Batal di Desktop (seragam memakai Button variant="ghost" size="sm") -->
 		{#if bill.paidCount > 0 || bill.skippedCount > 0}
-			<div class="hidden w-full justify-end gap-3 text-xs text-muted-foreground sm:flex">
+			<div class="hidden w-full justify-end gap-stack-xs sm:flex">
 				{#if bill.paidCount > 0}
-					<button
+					<Button
 						type="submit"
+						variant="ghost"
+						size="sm"
 						name="kind"
 						value="pay"
 						formaction="/?/undoBill"
 						disabled={pendingAction !== null}
-						class="inline-flex items-center gap-1 hover:text-foreground disabled:opacity-50"
 					>
 						{#if pendingAction === 'undo-pay'}
-							<IconLoader2 class="size-3.5 animate-spin" />
+							<IconLoader2 class="animate-spin" />
 						{:else}
-							<IconArrowBackUp class="size-3.5" />
+							<IconArrowBackUp />
 						{/if}
 						Batal bayar
-					</button>
+					</Button>
 				{/if}
 				{#if bill.skippedCount > 0}
-					<button
+					<Button
 						type="submit"
+						variant="ghost"
+						size="sm"
 						name="kind"
 						value="skip"
 						formaction="/?/undoBill"
 						disabled={pendingAction !== null}
-						class="inline-flex items-center gap-1 hover:text-foreground disabled:opacity-50"
 					>
 						{#if pendingAction === 'undo-skip'}
-							<IconLoader2 class="size-3.5 animate-spin" />
+							<IconLoader2 class="animate-spin" />
 						{:else}
-							<IconArrowBackUp class="size-3.5" />
+							<IconArrowBackUp />
 						{/if}
 						Batal lewati
-					</button>
+					</Button>
 				{/if}
 			</div>
 		{/if}
@@ -276,8 +280,8 @@
 {#if bill.isVariable}
 	<Dialog.Root bind:open={confirmModalOpen}>
 		<Dialog.Content>
-			<div class="space-y-1">
-				<Dialog.Title class="text-lg font-semibold">Bayar {bill.name}</Dialog.Title>
+			<div class="space-y-stack-xs">
+				<Dialog.Title class="text-lg font-semibold tracking-tight">Bayar {bill.name}</Dialog.Title>
 				<Dialog.Description class="text-sm text-muted-foreground">
 					Masukkan nominal tagihan {bill.name} bulan ini. Perubahan ini hanya berlaku untuk siklus bulan ini
 					dan tidak mengubah patokan di Master Tagihan.
@@ -287,7 +291,7 @@
 			<form
 				method="POST"
 				action="/?/settleBill"
-				class="space-y-4"
+				class="space-y-stack-md"
 				use:enhance={() => {
 					pendingAction = 'pay';
 					return async ({ result, update }) => {
@@ -299,7 +303,7 @@
 			>
 				<input type="hidden" name="id" value={bill.id} />
 				<input type="hidden" name="kind" value="pay" />
-				<div class="grid gap-2">
+				<div class="grid gap-stack-sm">
 					<Label for="varAmount-{bill.id}">Nominal tagihan bulan ini (Rp)</Label>
 					<Input
 						id="varAmount-{bill.id}"
@@ -311,7 +315,7 @@
 						required
 					/>
 					{#if actualAmount}
-						<p class="text-xs text-muted-foreground">
+						<p class="font-mono text-xs text-muted-foreground">
 							{formatRupiah(actualAmount)}
 							{#if actualAmount !== bill.amount}
 								(patokan awal: {formatRupiah(bill.amount)})
@@ -320,12 +324,13 @@
 					{/if}
 				</div>
 
-				<div class="flex justify-end gap-2 pt-2">
+				<div class="flex justify-end gap-stack-sm pt-stack-sm">
 					<Button
 						variant="outline"
 						onclick={() => (confirmModalOpen = false)}
 						disabled={pendingAction !== null}
 					>
+						<IconX />
 						Batal
 					</Button>
 					<Button type="submit" disabled={pendingAction !== null}>

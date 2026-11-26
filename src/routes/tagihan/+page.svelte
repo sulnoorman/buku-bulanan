@@ -18,13 +18,16 @@
 
 <svelte:head><title>Tagihan · Buku Bulanan</title></svelte:head>
 
-<div class="space-y-6">
-	<div class="flex items-end justify-between gap-4">
-		<div>
-			<h1 class="text-xl font-semibold">Tagihan Wajib</h1>
+<div class="space-y-stack-lg">
+	<div class="flex items-end justify-between gap-stack-md">
+		<div class="space-y-stack-xs">
+			<h1 class="text-xl font-bold tracking-tight">Tagihan Wajib</h1>
 			<p class="text-sm text-muted-foreground">Master tagihan yang dibuat ulang setiap siklus baru.</p>
 		</div>
-		<Button onclick={() => openForm(null)}><IconPlus /> Tambah</Button>
+		<Button size="sm" onclick={() => openForm(null)}>
+			<IconPlus />
+			Tambah
+		</Button>
 	</div>
 
 	<ObligationList obligations={data.obligations} onEdit={openForm} />
