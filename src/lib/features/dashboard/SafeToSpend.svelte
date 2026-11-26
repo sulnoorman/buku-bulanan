@@ -40,6 +40,6 @@
 		</div>
 	</dl>
 	<p class="mt-3 text-xs text-muted-foreground">
-		Saldo saat ini <span class="font-medium text-black">{formatRupiah(totals.balance)}</span>, dikurangi tagihan yang belum dibayar sebesar.
+		Saldo saat ini <span class="font-medium text-black">{formatRupiah(totals.balance)}</span>, dikurangi tagihan yang belum dibayar.
 	</p>
 </section>
