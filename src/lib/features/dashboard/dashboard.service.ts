@@ -19,6 +19,7 @@ import {
 import type { Expense } from '../expenses/expense.schema';
 import { getActiveCycle, getCompletedCycles, getLatestCycle } from '../cycles/cycle.queries';
 import type { Cycle } from '../cycles/cycle.schema';
+import { daysUntil, nextResetDate } from '$lib/utils/date';
 
 const sum = (rows: { amount: number }[]) => rows.reduce((total, r) => total + r.amount, 0);
 
@@ -37,6 +38,11 @@ export function buildCycleSummary(
 	const totalUnpaid = bills.reduce((s, b) => s + b.remainingAmount, 0);
 	const totalExpenses = sum(expenses);
 	const balance = totalIncome - totalPaid - totalExpenses;
+	const safeToSpend = balance - totalUnpaid;
+
+	const nextReset = nextResetDate(cycle.startDate, cycle.dueDay);
+	const daysRemaining = Math.max(1, daysUntil(nextReset));
+	const dailySafeToSpend = safeToSpend > 0 ? Math.floor(safeToSpend / daysRemaining) : 0;
 
 	return {
 		cycle,
@@ -50,7 +56,10 @@ export function buildCycleSummary(
 			unpaid: totalUnpaid,
 			expenses: totalExpenses,
 			balance,
-			safeToSpend: balance - totalUnpaid
+			safeToSpend,
+			dailySafeToSpend,
+			daysRemaining,
+			nextReset
 		},
 		counts: { paid: doneCount, total: bills.length }
 	};

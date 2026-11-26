@@ -14,6 +14,9 @@
 - Optimasi performa PWA (parallel query 1× jalan ke Turso, preload `tap`, Vercel region `sin1`)
 - Tombol destruktif merah solid (`Hapus`, `Nonaktifkan`) lengkap dengan dialog konfirmasi
 - Offline-read PWA cache + toast otomatis `Anda sedang offline` / `Kembali online`
+- Daily Safe-to-Spend ("Jatah Aman Harian" & Countdown hari menuju reset siklus berikutnya)
+- Native Web View Transitions API (`document.startViewTransition`) untuk perpindahan tab yang halus
+- Soft Dark Mode (Dimmed Slate Charcoal) + Semantic Design Tokens (`pixel-perfect-consistency`)
 
 ## 🔜 Berikutnya
 - [x] Poles UI mobile: ubah tampilan tabel (`Tagihan`, `Riwayat`) menjadi card list di layar HP
@@ -31,3 +34,5 @@
 - [ ] Custom kategori pengeluaran
 - [ ] Auto-expire tagihan (berlaku sampai bulan X, misal cicilan 6 bulan)
 - [ ] Tagihan bertahap dengan nominal fleksibel per bagian (misal minggu ini 450rb, bukan 500rb)
+- [ ] Single-User App Lock: PIN / Biometric Fingerprint & FaceID (Native WebAuthn API)
+- [ ] Share Bukti Transfer dari HP (Web Share Target API + Auto-Extract Nominal via OCR / AI)

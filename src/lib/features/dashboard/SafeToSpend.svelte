@@ -9,7 +9,7 @@
 	const negative = $derived(totals.safeToSpend < 0);
 </script>
 
-<!-- Metrik utama: angka besar, bersih, dengan rincian rumus & total tagihan bulan ini -->
+<!-- Metrik utama: angka besar, jatah aman harian, serta rincian rumus transparan -->
 <Card as="section" padding="lg">
 	<div class="flex items-center justify-between gap-stack-sm">
 		<p class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -32,6 +32,18 @@
 		<p class="mt-stack-xs text-xs font-medium text-red-600 dark:text-red-400">
 			Pengeluaran & tagihan melebihi pemasukan siklus ini.
 		</p>
+	{:else}
+		<!-- Metrik Pacing Harian: Jatah Aman per Hari sampai tanggal reset berikutnya -->
+		<div
+			class="mt-stack-base flex flex-wrap items-center justify-between gap-stack-sm rounded-control bg-muted/55 text-xs"
+		>
+			<span class="text-muted-foreground">
+				Jatah aman harian (<span class="font-medium text-foreground">{totals.daysRemaining} hari</span> tersisa)
+			</span>
+			<span class="font-semibold tracking-tight tabular-nums text-emerald-700 dark:text-emerald-400">
+				{formatRupiah(totals.dailySafeToSpend)} / hari
+			</span>
+		</div>
 	{/if}
 
 	<dl

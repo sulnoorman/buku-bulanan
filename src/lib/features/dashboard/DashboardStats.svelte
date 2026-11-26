@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Card } from '$components/ui/card';
-	import { formatTanggal } from '$lib/utils/format';
+	import { formatTanggal, formatTanggalPendek } from '$lib/utils/format';
 	import type { CycleSummary } from './dashboard.service';
 
 	let { summary }: { summary: CycleSummary } = $props();
@@ -18,7 +18,7 @@
 >
 	<div class="flex flex-col justify-between p-card-base">
 		<p class="text-xs font-medium uppercase tracking-wider text-muted-foreground">Siklus Aktif</p>
-		<p class="mt-stack-xs font-mono text-lg font-bold tracking-tight tabular-nums">
+		<p class="mt-stack-xs text-lg font-bold tracking-tight tabular-nums">
 			#{summary.cycle.cycleNumber}
 		</p>
 		<p class="mt-stack-xs text-xs text-muted-foreground">
@@ -29,9 +29,9 @@
 	<div class="flex flex-col justify-between p-card-base">
 		<div class="flex items-center justify-between gap-stack-xs">
 			<p class="text-xs font-medium uppercase tracking-wider text-muted-foreground">Tagihan Lunas</p>
-			<span class="font-mono text-xs text-muted-foreground">{progress}%</span>
+			<span class="text-xs tabular-nums text-muted-foreground">{progress}%</span>
 		</div>
-		<p class="mt-stack-xs font-mono text-lg font-bold tracking-tight tabular-nums">
+		<p class="mt-stack-xs text-lg font-bold tracking-tight tabular-nums">
 			{summary.counts.paid} / {summary.counts.total}
 		</p>
 		<div class="mt-stack-sm h-progress overflow-hidden rounded-full bg-muted">
@@ -44,9 +44,11 @@
 
 	<div class="col-span-2 flex flex-col justify-between p-card-base sm:col-span-1">
 		<p class="text-xs font-medium uppercase tracking-wider text-muted-foreground">Reset Berikutnya</p>
-		<p class="mt-stack-xs font-mono text-lg font-bold tracking-tight tabular-nums">
-			Tgl {summary.cycle.dueDay}
+		<p class="mt-stack-xs text-lg font-bold tracking-tight tabular-nums">
+			{formatTanggalPendek(summary.totals.nextReset)}
 		</p>
-		<p class="mt-stack-xs text-xs text-muted-foreground">Menunggu konfirmasi manual</p>
+		<p class="mt-stack-xs text-xs text-muted-foreground">
+			{summary.totals.daysRemaining} hari lagi · konfirmasi manual
+		</p>
 	</div>
 </Card>

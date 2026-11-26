@@ -1,7 +1,7 @@
 <script lang="ts">
 	import '../app.css';
 	import { onMount } from 'svelte';
-	import { preloadData } from '$app/navigation';
+	import { onNavigate, preloadData } from '$app/navigation';
 	import { navigating, page } from '$app/state';
 	import { APP_NAME } from '$lib/utils/constants';
 	import { Button } from '$components/ui/button';
@@ -43,6 +43,19 @@
 	function toggleTheme() {
 		applyTheme(!isDark);
 	}
+
+	// Native Web View Transitions API: animasi perpindahan halaman yang halus seperti aplikasi native
+	onNavigate((navigation) => {
+		if (!document.startViewTransition) return;
+		if (navigation.from?.url.pathname === navigation.to?.url.pathname) return;
+
+		return new Promise((resolve) => {
+			document.startViewTransition(async () => {
+				resolve();
+				await navigation.complete;
+			});
+		});
+	});
 
 	function showConnectionToast(kind: 'offline' | 'online') {
 		clearTimeout(toastTimer);

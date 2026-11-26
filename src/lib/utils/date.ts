@@ -13,6 +13,12 @@ export function todayISO(): string {
 	return toISODate(new Date());
 }
 
+/** Parse "YYYY-MM-DD" sebagai tengah malam waktu lokal (menghindari pergeseran zona waktu UTC). */
+function parseLocalDate(isoDate: string): Date {
+	const [y, m, d] = isoDate.split('-').map(Number);
+	return new Date(y, m - 1, d);
+}
+
 /** Buat tanggal dengan "day" yang dibatasi ke jumlah hari di bulan tsb. */
 function dateInMonth(year: number, month: number, day: number): Date {
 	const lastDay = new Date(year, month + 1, 0).getDate();
@@ -30,12 +36,23 @@ export function lastResetDate(dueDay: number, now = new Date()): string {
 }
 
 /**
+ * Tanggal reset siklus berikutnya setelah siklus dimulai.
+ * Contoh: siklus mulai 26 Nov (dueDay 26) → reset berikutnya 26 Des.
+ */
+export function nextResetDate(cycleStart: string, dueDay: number): string {
+	const start = parseLocalDate(cycleStart);
+	const candidate = dateInMonth(start.getFullYear(), start.getMonth(), dueDay);
+	if (candidate > start) return toISODate(candidate);
+	return toISODate(dateInMonth(start.getFullYear(), start.getMonth() + 1, dueDay));
+}
+
+/**
  * Tanggal jatuh tempo tagihan di dalam siklus:
  * kemunculan pertama `dueDay` pada/sesudah tanggal mulai siklus.
  * Contoh: siklus mulai 26 Okt, tagihan tgl 5 → 5 Nov; tagihan tgl 28 → 28 Okt.
  */
 export function billDueDate(cycleStart: string, dueDay: number): string {
-	const start = new Date(cycleStart);
+	const start = parseLocalDate(cycleStart);
 	const candidate = dateInMonth(start.getFullYear(), start.getMonth(), dueDay);
 	if (candidate >= start) return toISODate(candidate);
 	return toISODate(dateInMonth(start.getFullYear(), start.getMonth() + 1, dueDay));
@@ -43,7 +60,7 @@ export function billDueDate(cycleStart: string, dueDay: number): string {
 
 /** Selisih hari dari hari ini ke tanggal target (negatif = sudah lewat). */
 export function daysUntil(isoDate: string, now = new Date()): number {
-	const target = new Date(isoDate);
+	const target = parseLocalDate(isoDate);
 	const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 	return Math.round((target.getTime() - today.getTime()) / 86_400_000);
 }

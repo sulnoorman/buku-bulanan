@@ -129,3 +129,16 @@
 		@apply bg-background font-sans text-foreground antialiased;
 	}
 }
+
+/* Native View Transitions API: kunci header & bottom nav agar diam, hanya konten halaman yang bertransisi halus */
+header {
+	view-transition-name: app-header;
+}
+nav.fixed {
+	view-transition-name: app-bottom-nav;
+}
+::view-transition-old(root),
+::view-transition-new(root) {
+	animation-duration: 160ms;
+	animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
