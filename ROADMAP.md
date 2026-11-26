@@ -12,12 +12,14 @@
 - Tagihan nominal berubah-ubah / estimasi (konfirmasi nominal asli saat klik Bayar di Dashboard)
 - Loading indicator & spinner di navigasi PWA dan semua tombol aksi
 - Optimasi performa PWA (parallel query 1× jalan ke Turso, preload `tap`, Vercel region `sin1`)
+- Tombol destruktif merah solid (`Hapus`, `Nonaktifkan`) lengkap dengan dialog konfirmasi
+- Offline-read PWA cache + toast otomatis `Anda sedang offline` / `Kembali online`
 
 ## 🔜 Berikutnya
 - [x] Poles UI mobile: ubah tampilan tabel (`Tagihan`, `Riwayat`) menjadi card list di layar HP
 - [x] Ikon PWA (`static/icon-192.png`, `static/icon-512.png`)
 - [x] Deploy: Turso + Vercel
-- [ ] Push notification dari server (`web-push` + VAPID + Vercel Cron)
+- [x] Push notification dari server (`web-push` + VAPID + Vercel Cron)
 
 ## 💭 Dream features
 - [ ] Multi-user dengan auth (`user_id` di semua tabel)

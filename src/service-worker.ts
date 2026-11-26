@@ -29,12 +29,15 @@ sw.addEventListener('activate', (event) => {
 	);
 });
 
-// Fetch: aset statis dari cache. Data halaman SELALU dari network
-// (data keuangan tidak boleh basi), fallback ke cache hanya saat offline.
+// Fetch:
+// 1. Aset statis (JS/CSS/icon) -> Cache-First
+// 2. Halaman & data SvelteKit (__data.json) -> Network-First + simpan ke cache,
+//    sehingga saat HP offline semua halaman dan data terakhir tetap bisa dibuka!
 sw.addEventListener('fetch', (event) => {
 	if (event.request.method !== 'GET') return;
 	const url = new URL(event.request.url);
 	if (url.origin !== location.origin) return;
+	if (url.pathname.startsWith('/api/')) return;
 
 	event.respondWith(
 		(async () => {
@@ -44,27 +47,44 @@ sw.addEventListener('fetch', (event) => {
 				if (cached) return cached;
 			}
 			try {
-				return await fetch(event.request);
+				const response = await fetch(event.request);
+				if (response.status === 200) {
+					cache.put(event.request, response.clone());
+				}
+				return response;
 			} catch {
-				return (await cache.match(event.request)) ?? new Response('Offline', { status: 503 });
+				const cached =
+					(await cache.match(event.request)) ?? (await cache.match(url.pathname));
+				if (cached) return cached;
+				return new Response('Offline', { status: 503 });
 			}
 		})()
 	);
 });
 
-// Push dari server → tampilkan notifikasi
+// Push dari server → tampilkan notifikasi native di HP
 sw.addEventListener('push', (event) => {
 	const data = event.data?.json() ?? {};
 	event.waitUntil(
 		sw.registration.showNotification(data.title ?? 'Buku Bulanan', {
 			body: data.body ?? 'Ada tagihan yang mendekati jatuh tempo.',
-			icon: '/icon-192.png'
+			icon: '/icon-192.png',
+			badge: '/icon-192.png',
+			data: { url: data.url ?? '/' }
 		})
 	);
 });
 
-// Klik notifikasi → buka dashboard
+// Klik notifikasi → fokus atau buka aplikasi
 sw.addEventListener('notificationclick', (event) => {
 	event.notification.close();
-	event.waitUntil(sw.clients.openWindow('/'));
+	const targetUrl = (event.notification.data as { url?: string } | undefined)?.url ?? '/';
+	event.waitUntil(
+		sw.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+			for (const client of clientList) {
+				if ('focus' in client) return client.focus();
+			}
+			return sw.clients.openWindow(targetUrl);
+		})
+	);
 });

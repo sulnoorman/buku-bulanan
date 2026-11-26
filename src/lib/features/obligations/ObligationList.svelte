@@ -2,6 +2,7 @@
 	import { enhance } from '$app/forms';
 	import { Button } from '$components/ui/button';
 	import { Badge } from '$components/ui/badge';
+	import * as Dialog from '$components/ui/dialog';
 	import { formatRupiah } from '$lib/utils/format';
 	import { IconPencil, IconArchive, IconRestore, IconLoader2 } from '@tabler/icons-svelte';
 	import type { Obligation } from './obligation.schema';
@@ -12,10 +13,17 @@
 	}: { obligations: Obligation[]; onEdit: (ob: Obligation) => void } = $props();
 
 	let togglingId = $state<number | null>(null);
+	let confirmTarget = $state<Obligation | null>(null);
+	let confirmOpen = $state(false);
 
 	const totalActive = $derived(
 		obligations.filter((o) => o.isActive).reduce((s, o) => s + o.amount, 0)
 	);
+
+	function askDeactivate(ob: Obligation) {
+		confirmTarget = ob;
+		confirmOpen = true;
+	}
 
 	function handleToggle(id: number) {
 		return () => {
@@ -23,6 +31,7 @@
 			return async ({ update }: { update: () => Promise<void> }) => {
 				await update();
 				togglingId = null;
+				confirmOpen = false;
 			};
 		};
 	}
@@ -71,27 +80,35 @@
 						</p>
 					</div>
 
-					<div class="mt-3 flex items-center justify-end gap-1 border-t pt-2.5">
+					<div class="mt-3 flex items-center justify-end gap-2 border-t pt-2.5">
 						{#if ob.isActive}
-							<Button variant="ghost" size="sm" onclick={() => onEdit(ob)}>
+							<Button variant="outline" size="sm" onclick={() => onEdit(ob)}>
 								<IconPencil />
 								Edit
 							</Button>
-						{/if}
-						<form method="POST" action="/tagihan?/toggle" use:enhance={handleToggle(ob.id)}>
-							<input type="hidden" name="id" value={ob.id} />
-							<input type="hidden" name="isActive" value={ob.isActive ? '0' : '1'} />
-							<Button type="submit" variant="ghost" size="sm" disabled={togglingId === ob.id}>
-								{#if togglingId === ob.id}
-									<IconLoader2 class="animate-spin" />
-								{:else if ob.isActive}
-									<IconArchive />
-								{:else}
-									<IconRestore />
-								{/if}
-								{ob.isActive ? 'Nonaktifkan' : 'Aktifkan'}
+							<Button
+								variant="destructive"
+								size="sm"
+								disabled={togglingId === ob.id}
+								onclick={() => askDeactivate(ob)}
+							>
+								<IconArchive />
+								Nonaktifkan
 							</Button>
-						</form>
+						{:else}
+							<form method="POST" action="/tagihan?/toggle" use:enhance={handleToggle(ob.id)}>
+								<input type="hidden" name="id" value={ob.id} />
+								<input type="hidden" name="isActive" value="1" />
+								<Button type="submit" variant="outline" size="sm" disabled={togglingId === ob.id}>
+									{#if togglingId === ob.id}
+										<IconLoader2 class="animate-spin" />
+									{:else}
+										<IconRestore />
+									{/if}
+									Aktifkan
+								</Button>
+							</form>
+						{/if}
 					</div>
 				</li>
 			{/each}
@@ -106,7 +123,7 @@
 					<th class="px-4 py-2 font-medium">Nama</th>
 					<th class="px-4 py-2 font-medium">Jatuh tempo</th>
 					<th class="px-4 py-2 text-right font-medium">Nominal</th>
-					<th class="w-24 px-4 py-2"></th>
+					<th class="w-40 px-4 py-2"></th>
 				</tr>
 			</thead>
 			<tbody class="divide-y">
@@ -126,32 +143,43 @@
 								</span>
 							{/if}
 						</td>
-						<td class="px-2 py-2">
-							<div class="flex justify-end">
+						<td class="px-3 py-2">
+							<div class="flex justify-end gap-1.5">
 								{#if ob.isActive}
-									<Button variant="ghost" size="icon" title="Edit" onclick={() => onEdit(ob)}>
+									<Button variant="outline" size="sm" title="Edit" onclick={() => onEdit(ob)}>
 										<IconPencil />
+										Edit
 									</Button>
-								{/if}
-								<form method="POST" action="/tagihan?/toggle" use:enhance={handleToggle(ob.id)}>
-									<input type="hidden" name="id" value={ob.id} />
-									<input type="hidden" name="isActive" value={ob.isActive ? '0' : '1'} />
 									<Button
-										type="submit"
-										variant="ghost"
-										size="icon"
+										variant="destructive"
+										size="sm"
 										disabled={togglingId === ob.id}
-										title={ob.isActive ? 'Nonaktifkan (tidak ikut siklus berikutnya)' : 'Aktifkan lagi'}
+										title="Nonaktifkan (tidak ikut siklus berikutnya)"
+										onclick={() => askDeactivate(ob)}
 									>
-										{#if togglingId === ob.id}
-											<IconLoader2 class="animate-spin" />
-										{:else if ob.isActive}
-											<IconArchive />
-										{:else}
-											<IconRestore />
-										{/if}
+										<IconArchive />
+										Nonaktifkan
 									</Button>
-								</form>
+								{:else}
+									<form method="POST" action="/tagihan?/toggle" use:enhance={handleToggle(ob.id)}>
+										<input type="hidden" name="id" value={ob.id} />
+										<input type="hidden" name="isActive" value="1" />
+										<Button
+											type="submit"
+											variant="outline"
+											size="sm"
+											disabled={togglingId === ob.id}
+											title="Aktifkan lagi"
+										>
+											{#if togglingId === ob.id}
+												<IconLoader2 class="animate-spin" />
+											{:else}
+												<IconRestore />
+											{/if}
+											Aktifkan
+										</Button>
+									</form>
+								{/if}
 							</div>
 						</td>
 					</tr>
@@ -167,3 +195,43 @@
 		</table>
 	</div>
 {/if}
+
+<!-- Dialog Konfirmasi Nonaktifkan Tagihan -->
+<Dialog.Root bind:open={confirmOpen}>
+	<Dialog.Content>
+		<div class="space-y-1">
+			<Dialog.Title class="text-lg font-semibold">Nonaktifkan Tagihan?</Dialog.Title>
+			<Dialog.Description class="text-sm text-muted-foreground">
+				Tagihan <strong class="text-foreground">{confirmTarget?.name}</strong> tidak akan dibuat otomatis
+				pada siklus bulan berikutnya. Kamu tetap bisa mengaktifkannya kembali kapan saja.
+			</Dialog.Description>
+		</div>
+		{#if confirmTarget}
+			<form
+				method="POST"
+				action="/tagihan?/toggle"
+				use:enhance={handleToggle(confirmTarget.id)}
+				class="flex justify-end gap-2 pt-3"
+			>
+				<input type="hidden" name="id" value={confirmTarget.id} />
+				<input type="hidden" name="isActive" value="0" />
+				<Button
+					type="button"
+					variant="outline"
+					onclick={() => (confirmOpen = false)}
+					disabled={togglingId !== null}
+				>
+					Batal
+				</Button>
+				<Button type="submit" variant="destructive" disabled={togglingId !== null}>
+					{#if togglingId === confirmTarget.id}
+						<IconLoader2 class="animate-spin" />
+					{:else}
+						<IconArchive />
+					{/if}
+					Ya, Nonaktifkan
+				</Button>
+			</form>
+		{/if}
+	</Dialog.Content>
+</Dialog.Root>

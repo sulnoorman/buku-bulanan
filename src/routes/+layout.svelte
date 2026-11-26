@@ -1,6 +1,7 @@
 <script lang="ts">
 	import '../app.css';
 	import { onMount } from 'svelte';
+	import { preloadData } from '$app/navigation';
 	import { navigating, page } from '$app/state';
 	import { APP_NAME } from '$lib/utils/constants';
 	import { Button } from '$components/ui/button';
@@ -10,7 +11,9 @@
 		IconShoppingCart,
 		IconHistory,
 		IconDownload,
-		IconLoader2
+		IconLoader2,
+		IconWifiOff,
+		IconWifi
 	} from '@tabler/icons-svelte';
 
 	let { children } = $props();
@@ -21,17 +24,49 @@
 	}
 
 	let deferredPrompt = $state<BeforeInstallPromptEvent | null>(null);
+	let connectionToast = $state<'offline' | 'online' | null>(null);
+	let toastTimer: ReturnType<typeof setTimeout> | undefined;
+
+	function showConnectionToast(kind: 'offline' | 'online') {
+		clearTimeout(toastTimer);
+		connectionToast = kind;
+		toastTimer = setTimeout(() => {
+			connectionToast = null;
+		}, 3500);
+	}
 
 	onMount(() => {
 		const handler = (e: Event) => {
 			e.preventDefault();
 			deferredPrompt = e as BeforeInstallPromptEvent;
 		};
+		const onOffline = () => showConnectionToast('offline');
+		const onOnline = () => showConnectionToast('online');
+
 		window.addEventListener('beforeinstallprompt', handler);
 		window.addEventListener('appinstalled', () => {
 			deferredPrompt = null;
 		});
-		return () => window.removeEventListener('beforeinstallprompt', handler);
+		window.addEventListener('offline', onOffline);
+		window.addEventListener('online', onOnline);
+
+		if (!navigator.onLine) {
+			showConnectionToast('offline');
+		} else {
+			// Hangatkan cache 4 tab utama di background supaya saat tiba-tiba offline semuanya siap dibuka
+			setTimeout(() => {
+				for (const path of ['/', '/tagihan', '/pengeluaran', '/riwayat']) {
+					if (path !== page.url.pathname) preloadData(path).catch(() => {});
+				}
+			}, 1500);
+		}
+
+		return () => {
+			clearTimeout(toastTimer);
+			window.removeEventListener('beforeinstallprompt', handler);
+			window.removeEventListener('offline', onOffline);
+			window.removeEventListener('online', onOnline);
+		};
 	});
 
 	async function installApp() {
@@ -99,6 +134,26 @@
 			{/if}
 		</div>
 	</header>
+
+	<!-- Toast status koneksi (muncul otomatis beberapa detik lalu hilang) -->
+	{#if connectionToast}
+		<div
+			role="status"
+			aria-live="polite"
+			class="fixed left-1/2 top-16 z-50 flex -translate-x-1/2 items-center gap-2 rounded-full px-4 py-2 text-xs font-medium shadow-md transition-all {connectionToast ===
+			'offline'
+				? 'bg-amber-600 text-white'
+				: 'bg-emerald-600 text-white'}"
+		>
+			{#if connectionToast === 'offline'}
+				<IconWifiOff class="size-4 shrink-0" />
+				<span>Anda sedang offline</span>
+			{:else}
+				<IconWifi class="size-4 shrink-0" />
+				<span>Kembali online</span>
+			{/if}
+		</div>
+	{/if}
 
 	<main class="mx-auto max-w-5xl px-4 py-6 transition-opacity {isNavigating ? 'opacity-60' : ''}">
 		{@render children()}
