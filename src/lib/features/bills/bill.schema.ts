@@ -16,6 +16,7 @@ export const monthlyBills = sqliteTable('monthly_bills', {
 	amount: integer('amount').notNull(),
 	dueDay: integer('due_day').notNull(),
 	installments: integer('installments').notNull().default(1),
+	isVariable: integer('is_variable', { mode: 'boolean' }).notNull().default(false),
 	// Progres pembayaran bertahap. Lunas (PAID) jika paidCount + skippedCount = installments
 	paidCount: integer('paid_count').notNull().default(0),
 	skippedCount: integer('skipped_count').notNull().default(0),

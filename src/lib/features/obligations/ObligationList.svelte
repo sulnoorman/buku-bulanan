@@ -3,7 +3,7 @@
 	import { Button } from '$components/ui/button';
 	import { Badge } from '$components/ui/badge';
 	import { formatRupiah } from '$lib/utils/format';
-	import { IconPencil, IconArchive, IconRestore } from '@tabler/icons-svelte';
+	import { IconPencil, IconArchive, IconRestore, IconLoader2 } from '@tabler/icons-svelte';
 	import type { Obligation } from './obligation.schema';
 
 	let {
@@ -11,9 +11,21 @@
 		onEdit
 	}: { obligations: Obligation[]; onEdit: (ob: Obligation) => void } = $props();
 
+	let togglingId = $state<number | null>(null);
+
 	const totalActive = $derived(
 		obligations.filter((o) => o.isActive).reduce((s, o) => s + o.amount, 0)
 	);
+
+	function handleToggle(id: number) {
+		return () => {
+			togglingId = id;
+			return async ({ update }: { update: () => Promise<void> }) => {
+				await update();
+				togglingId = null;
+			};
+		};
+	}
 </script>
 
 {#if obligations.length === 0}
@@ -21,7 +33,73 @@
 		Belum ada tagihan wajib. Tambahkan listrik, internet, cicilan, dll.
 	</p>
 {:else}
-	<div class="overflow-x-auto rounded-lg border">
+	<!-- Tampilan Mobile / PWA: Card Item List -->
+	<div class="space-y-3 md:hidden">
+		<div class="flex items-center justify-between rounded-lg border bg-muted/30 px-4 py-3 text-sm">
+			<span class="text-muted-foreground">Total tagihan aktif / bulan</span>
+			<span class="font-semibold tabular-nums">{formatRupiah(totalActive)}</span>
+		</div>
+
+		<ul class="space-y-2.5">
+			{#each obligations as ob (ob.id)}
+				<li
+					class="rounded-lg border p-4 {ob.isActive
+						? 'bg-card'
+						: 'bg-muted/20 text-muted-foreground'}"
+				>
+					<div class="flex items-start justify-between gap-3">
+						<div class="min-w-0 flex-1">
+							<div class="flex flex-wrap items-center gap-1.5">
+								<p class="font-medium">{ob.name}</p>
+								{#if ob.isVariable}
+									<Badge variant="secondary">Estimasi</Badge>
+								{/if}
+								{#if !ob.isActive}
+									<Badge variant="outline">Nonaktif</Badge>
+								{/if}
+							</div>
+							<p class="mt-1 text-xs text-muted-foreground">
+								Jatuh tempo tgl {ob.dueDay}
+								{#if ob.installments > 1}
+									· {ob.installments}× bayar ({formatRupiah(Math.floor(ob.amount / ob.installments))})
+								{/if}
+							</p>
+						</div>
+
+						<p class="shrink-0 text-right font-semibold tabular-nums">
+							{ob.isVariable ? '~' : ''}{formatRupiah(ob.amount)}
+						</p>
+					</div>
+
+					<div class="mt-3 flex items-center justify-end gap-1 border-t pt-2.5">
+						{#if ob.isActive}
+							<Button variant="ghost" size="sm" onclick={() => onEdit(ob)}>
+								<IconPencil />
+								Edit
+							</Button>
+						{/if}
+						<form method="POST" action="/tagihan?/toggle" use:enhance={handleToggle(ob.id)}>
+							<input type="hidden" name="id" value={ob.id} />
+							<input type="hidden" name="isActive" value={ob.isActive ? '0' : '1'} />
+							<Button type="submit" variant="ghost" size="sm" disabled={togglingId === ob.id}>
+								{#if togglingId === ob.id}
+									<IconLoader2 class="animate-spin" />
+								{:else if ob.isActive}
+									<IconArchive />
+								{:else}
+									<IconRestore />
+								{/if}
+								{ob.isActive ? 'Nonaktifkan' : 'Aktifkan'}
+							</Button>
+						</form>
+					</div>
+				</li>
+			{/each}
+		</ul>
+	</div>
+
+	<!-- Tampilan Desktop: Tabel -->
+	<div class="hidden overflow-x-auto rounded-lg border md:block">
 		<table class="w-full text-sm">
 			<thead class="border-b bg-muted/50 text-left text-xs text-muted-foreground">
 				<tr>
@@ -36,11 +114,12 @@
 					<tr class={ob.isActive ? '' : 'text-muted-foreground'}>
 						<td class="px-4 py-3">
 							<span class="font-medium">{ob.name}</span>
+							{#if ob.isVariable}<Badge variant="secondary" class="ml-2">Estimasi</Badge>{/if}
 							{#if !ob.isActive}<Badge variant="outline" class="ml-2">Nonaktif</Badge>{/if}
 						</td>
 						<td class="px-4 py-3">Tgl {ob.dueDay}</td>
 						<td class="px-4 py-3 text-right tabular-nums">
-							{formatRupiah(ob.amount)}
+							{ob.isVariable ? '~' : ''}{formatRupiah(ob.amount)}
 							{#if ob.installments > 1}
 								<span class="block text-xs text-muted-foreground">
 									{ob.installments} × {formatRupiah(Math.floor(ob.amount / ob.installments))}
@@ -54,16 +133,23 @@
 										<IconPencil />
 									</Button>
 								{/if}
-								<form method="POST" action="/tagihan?/toggle" use:enhance>
+								<form method="POST" action="/tagihan?/toggle" use:enhance={handleToggle(ob.id)}>
 									<input type="hidden" name="id" value={ob.id} />
 									<input type="hidden" name="isActive" value={ob.isActive ? '0' : '1'} />
 									<Button
 										type="submit"
 										variant="ghost"
 										size="icon"
+										disabled={togglingId === ob.id}
 										title={ob.isActive ? 'Nonaktifkan (tidak ikut siklus berikutnya)' : 'Aktifkan lagi'}
 									>
-										{#if ob.isActive}<IconArchive />{:else}<IconRestore />{/if}
+										{#if togglingId === ob.id}
+											<IconLoader2 class="animate-spin" />
+										{:else if ob.isActive}
+											<IconArchive />
+										{:else}
+											<IconRestore />
+										{/if}
 									</Button>
 								</form>
 							</div>

@@ -2,7 +2,13 @@ import { db } from '$lib/server/db';
 import { obligationsMaster } from './obligation.schema';
 import { asc, desc, eq } from 'drizzle-orm';
 
-export type ObligationInput = { name: string; amount: number; dueDay: number; installments: number };
+export type ObligationInput = {
+	name: string;
+	amount: number;
+	dueDay: number;
+	installments: number;
+	isVariable: boolean;
+};
 
 export async function getAllObligations() {
 	return db

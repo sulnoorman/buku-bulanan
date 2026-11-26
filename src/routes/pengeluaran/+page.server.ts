@@ -1,15 +1,19 @@
 import { fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { getActiveCycle } from '$features/cycles/cycle.queries';
-import { createExpense, deleteExpense, getExpensesByCycle } from '$features/expenses/expense.queries';
+import {
+	createExpense,
+	deleteExpense,
+	getExpensesForActiveCycle
+} from '$features/expenses/expense.queries';
 import { EXPENSE_CATEGORIES } from '$lib/utils/constants';
 import { readPositiveInt, readText } from '$lib/server/form';
 
 export const load: PageServerLoad = async () => {
-	const active = await getActiveCycle();
+	const [active, expenses] = await Promise.all([getActiveCycle(), getExpensesForActiveCycle()]);
 	return {
 		hasActiveCycle: !!active,
-		expenses: active ? await getExpensesByCycle(active.id) : []
+		expenses: active ? expenses : []
 	};
 };
 

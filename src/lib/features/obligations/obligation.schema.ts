@@ -4,9 +4,10 @@ import { sql } from 'drizzle-orm';
 export const obligationsMaster = sqliteTable('obligations_master', {
 	id: integer('id').primaryKey({ autoIncrement: true }),
 	name: text('name').notNull(),
-	amount: integer('amount').notNull(), // Rupiah (integer)
+	amount: integer('amount').notNull(), // Rupiah (integer) — patokan/estimasi jika isVariable=true
 	dueDay: integer('due_day').notNull(), // estimasi jatuh tempo (1-31)
 	installments: integer('installments').notNull().default(1), // 1 = sekali bayar, 4 = per minggu
+	isVariable: integer('is_variable', { mode: 'boolean' }).notNull().default(false), // true = nominal berubah-ubah tiap bulan
 	isActive: integer('is_active', { mode: 'boolean' }).notNull().default(true),
 	createdAt: text('created_at').notNull().default(sql`(current_timestamp)`),
 	updatedAt: text('updated_at').notNull().default(sql`(current_timestamp)`)

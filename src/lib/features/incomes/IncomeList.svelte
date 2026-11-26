@@ -2,10 +2,12 @@
 	import { enhance } from '$app/forms';
 	import { Badge } from '$components/ui/badge';
 	import { formatRupiah } from '$lib/utils/format';
-	import { IconTrash } from '@tabler/icons-svelte';
+	import { IconTrash, IconLoader2 } from '@tabler/icons-svelte';
 	import type { Income } from './income.schema';
 
 	let { incomes }: { incomes: Income[] } = $props();
+
+	let deletingId = $state<number | null>(null);
 </script>
 
 <ul class="divide-y rounded-lg border">
@@ -20,10 +22,29 @@
 			</p>
 			<!-- Pemasukan utama tidak bisa dihapus agar siklus selalu punya basis -->
 			{#if income.type === 'EXTRA'}
-				<form method="POST" action="/?/deleteIncome" use:enhance>
+				<form
+					method="POST"
+					action="/?/deleteIncome"
+					use:enhance={() => {
+						deletingId = income.id;
+						return async ({ update }) => {
+							await update();
+							deletingId = null;
+						};
+					}}
+				>
 					<input type="hidden" name="id" value={income.id} />
-					<button type="submit" class="text-muted-foreground hover:text-red-600" title="Hapus">
-						<IconTrash class="size-4" />
+					<button
+						type="submit"
+						disabled={deletingId === income.id}
+						class="text-muted-foreground hover:text-red-600 disabled:opacity-50"
+						title="Hapus"
+					>
+						{#if deletingId === income.id}
+							<IconLoader2 class="size-4 animate-spin" />
+						{:else}
+							<IconTrash class="size-4" />
+						{/if}
 					</button>
 				</form>
 			{:else}

@@ -8,10 +8,12 @@
 	import { EXPENSE_CATEGORIES } from '$lib/utils/constants';
 	import { formatRupiah } from '$lib/utils/format';
 	import { todayISO } from '$lib/utils/date';
+	import { IconLoader2 } from '@tabler/icons-svelte';
 
 	let { open = $bindable(false) }: { open?: boolean } = $props();
 
 	let amount = $state<number>();
+	let submitting = $state(false);
 </script>
 
 <Dialog.Root bind:open>
@@ -26,14 +28,17 @@
 			method="POST"
 			action="/pengeluaran?/add"
 			class="space-y-4"
-			use:enhance={() =>
-				async ({ result, update }) => {
+			use:enhance={() => {
+				submitting = true;
+				return async ({ result, update }) => {
 					await update();
+					submitting = false;
 					if (result.type === 'success') {
 						open = false;
 						amount = undefined;
 					}
-				}}
+				};
+			}}
 		>
 			<div class="grid gap-2">
 				<Label for="expLabel">Keterangan</Label>
@@ -42,7 +47,15 @@
 			<div class="grid grid-cols-2 gap-3">
 				<div class="grid gap-2">
 					<Label for="expAmount">Nominal (Rp)</Label>
-					<Input id="expAmount" name="amount" type="number" min="1" inputmode="numeric" bind:value={amount} required />
+					<Input
+						id="expAmount"
+						name="amount"
+						type="number"
+						min="1"
+						inputmode="numeric"
+						bind:value={amount}
+						required
+					/>
 				</div>
 				<div class="grid gap-2">
 					<Label for="expDate">Tanggal</Label>
@@ -63,8 +76,11 @@
 				<Input id="expNote" name="note" />
 			</div>
 			<div class="flex justify-end gap-2 pt-2">
-				<Button variant="outline" onclick={() => (open = false)}>Batal</Button>
-				<Button type="submit">Simpan</Button>
+				<Button variant="outline" onclick={() => (open = false)} disabled={submitting}>Batal</Button>
+				<Button type="submit" disabled={submitting}>
+					{#if submitting}<IconLoader2 class="animate-spin" />{/if}
+					Simpan
+				</Button>
 			</div>
 		</form>
 	</Dialog.Content>

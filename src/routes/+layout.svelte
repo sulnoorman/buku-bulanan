@@ -1,7 +1,7 @@
 <script lang="ts">
 	import '../app.css';
 	import { onMount } from 'svelte';
-	import { page } from '$app/state';
+	import { navigating, page } from '$app/state';
 	import { APP_NAME } from '$lib/utils/constants';
 	import { Button } from '$components/ui/button';
 	import {
@@ -9,7 +9,8 @@
 		IconReceipt2,
 		IconShoppingCart,
 		IconHistory,
-		IconDownload
+		IconDownload,
+		IconLoader2
 	} from '@tabler/icons-svelte';
 
 	let { children } = $props();
@@ -47,8 +48,12 @@
 		{ href: '/riwayat', label: 'Riwayat', icon: IconHistory }
 	];
 
+	const isNavigating = $derived(navigating.to !== null);
+	// Langsung nyalakan tab tujuan begitu disentuh supaya terasa instan di PWA
+	const activePath = $derived(navigating.to?.url.pathname ?? page.url.pathname);
+
 	const isActive = (href: string) =>
-		href === '/' ? page.url.pathname === '/' : page.url.pathname.startsWith(href);
+		href === '/' ? activePath === '/' : activePath.startsWith(href);
 </script>
 
 <svelte:head>
@@ -57,8 +62,18 @@
 
 <div class="min-h-screen pb-20 md:pb-0">
 	<header class="sticky top-0 z-40 border-b bg-background">
+		{#if isNavigating}
+			<div class="absolute inset-x-0 top-0 h-0.5 overflow-hidden bg-muted">
+				<div class="h-full w-2/3 animate-pulse bg-primary"></div>
+			</div>
+		{/if}
 		<div class="mx-auto flex h-14 max-w-5xl items-center gap-6 px-4">
-			<a href="/" class="font-semibold">{APP_NAME}</a>
+			<a href="/" class="flex items-center gap-2 font-semibold">
+				{APP_NAME}
+				{#if isNavigating}
+					<IconLoader2 class="size-4 animate-spin text-muted-foreground" />
+				{/if}
+			</a>
 			<!-- Navigasi desktop -->
 			<nav class="hidden gap-1 md:flex">
 				{#each nav as item (item.href)}
@@ -85,20 +100,29 @@
 		</div>
 	</header>
 
-	<main class="mx-auto max-w-5xl px-4 py-6">
+	<main class="mx-auto max-w-5xl px-4 py-6 transition-opacity {isNavigating ? 'opacity-60' : ''}">
 		{@render children()}
 	</main>
 
 	<!-- Navigasi bawah untuk mobile (terasa seperti app native saat di-install sebagai PWA) -->
 	<nav class="fixed inset-x-0 bottom-0 z-40 grid grid-cols-4 border-t bg-background md:hidden">
 		{#each nav as item (item.href)}
+			{@const targetLoading =
+				isNavigating &&
+				(item.href === '/'
+					? navigating.to?.url.pathname === '/'
+					: navigating.to?.url.pathname.startsWith(item.href))}
 			<a
 				href={item.href}
-				class="flex flex-col items-center gap-1 py-2 text-[11px] {isActive(item.href)
+				class="flex flex-col items-center gap-1 py-2 text-[11px] transition-colors {isActive(item.href)
 					? 'font-medium text-foreground'
 					: 'text-muted-foreground'}"
 			>
-				<item.icon class="size-5" />
+				{#if targetLoading}
+					<IconLoader2 class="size-5 animate-spin" />
+				{:else}
+					<item.icon class="size-5" />
+				{/if}
 				{item.label}
 			</a>
 		{/each}

@@ -9,11 +9,14 @@
 - Pengeluaran harian dengan kategori
 - Safe-to-Spend = Saldo (pemasukan − sudah dibayar − pengeluaran) − sisa tagihan
 - Peringatan jatuh tempo, kerangka PWA & Web Push
+- Tagihan nominal berubah-ubah / estimasi (konfirmasi nominal asli saat klik Bayar di Dashboard)
+- Loading indicator & spinner di navigasi PWA dan semua tombol aksi
+- Optimasi performa PWA (parallel query 1× jalan ke Turso, preload `tap`, Vercel region `sin1`)
 
 ## 🔜 Berikutnya
-- [ ] Poles UI mobile: ubah tampilan tabel (`Tagihan`, `Riwayat`) menjadi card list di layar HP
+- [x] Poles UI mobile: ubah tampilan tabel (`Tagihan`, `Riwayat`) menjadi card list di layar HP
 - [x] Ikon PWA (`static/icon-192.png`, `static/icon-512.png`)
-- [ ] Deploy: Turso + Vercel
+- [x] Deploy: Turso + Vercel
 - [ ] Push notification dari server (`web-push` + VAPID + Vercel Cron)
 
 ## 💭 Dream features

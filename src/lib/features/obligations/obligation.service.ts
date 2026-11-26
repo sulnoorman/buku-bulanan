@@ -22,7 +22,8 @@ export async function createObligation(data: ObligationInput, addToCurrentCycle:
 				name: obligation.name,
 				amount: obligation.amount,
 				dueDay: obligation.dueDay,
-				installments: obligation.installments
+				installments: obligation.installments,
+				isVariable: obligation.isVariable
 			});
 		}
 
@@ -55,6 +56,7 @@ export async function updateObligationWithCycle(
 					amount: data.amount,
 					dueDay: data.dueDay,
 					installments: data.installments,
+					isVariable: data.isVariable,
 					status: sql`CASE WHEN ${monthlyBills.paidCount} + ${monthlyBills.skippedCount} >= ${data.installments} THEN 'PAID' ELSE 'UNPAID' END`
 				})
 				.where(and(eq(monthlyBills.cycleId, active.id), eq(monthlyBills.obligationId, id)));

@@ -5,7 +5,7 @@
 	import { Label } from '$components/ui/label';
 	import * as Dialog from '$components/ui/dialog';
 	import { formatRupiah } from '$lib/utils/format';
-	import { IconCalendarRepeat } from '@tabler/icons-svelte';
+	import { IconCalendarRepeat, IconLoader2 } from '@tabler/icons-svelte';
 
 	let { dueDay, isFirstCycle }: { dueDay: number; isFirstCycle: boolean } = $props();
 
@@ -79,8 +79,11 @@
 				<p class="text-xs text-muted-foreground">Misal 26 = siklus reset setiap tanggal 26.</p>
 			</div>
 			<div class="flex justify-end gap-2 pt-2">
-				<Button variant="outline" onclick={() => (open = false)}>Nanti</Button>
-				<Button type="submit" disabled={submitting}>Konfirmasi</Button>
+				<Button variant="outline" onclick={() => (open = false)} disabled={submitting}>Nanti</Button>
+				<Button type="submit" disabled={submitting}>
+					{#if submitting}<IconLoader2 class="animate-spin" />{/if}
+					Konfirmasi
+				</Button>
 			</div>
 		</form>
 	</Dialog.Content>

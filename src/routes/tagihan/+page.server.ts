@@ -16,7 +16,8 @@ function readObligation(form: FormData) {
 	const dueDay = readDay(form, 'dueDay');
 	// Jumlah tahap pembayaran per siklus (1-5). Kosong/tidak valid → 1 (sekali bayar)
 	const installments = Math.min(readPositiveInt(form, 'installments') ?? 1, 5);
-	return name && amount && dueDay ? { name, amount, dueDay, installments } : null;
+	const isVariable = form.get('isVariable') === '1';
+	return name && amount && dueDay ? { name, amount, dueDay, installments, isVariable } : null;
 }
 
 export const actions: Actions = {

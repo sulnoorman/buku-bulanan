@@ -18,7 +18,7 @@
 		Belum ada tagihan di siklus ini. Tambahkan di menu <a href="/tagihan" class="underline">Tagihan</a>.
 	</p>
 {:else}
-	<ul class="divide-y rounded-lg border">
+	<ul class="space-y-2.5 sm:space-y-0 sm:divide-y sm:rounded-lg sm:border">
 		{#each sorted as bill (bill.id)}
 			<BillRow {bill} />
 		{/each}

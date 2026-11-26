@@ -5,10 +5,12 @@
 	import { Label } from '$components/ui/label';
 	import * as Dialog from '$components/ui/dialog';
 	import { formatRupiah } from '$lib/utils/format';
+	import { IconLoader2 } from '@tabler/icons-svelte';
 
 	let { open = $bindable(false) }: { open?: boolean } = $props();
 
 	let amount = $state<number>();
+	let submitting = $state(false);
 </script>
 
 <Dialog.Root bind:open>
@@ -23,14 +25,17 @@
 			method="POST"
 			action="/?/addIncome"
 			class="space-y-4"
-			use:enhance={() =>
-				async ({ result, update }) => {
+			use:enhance={() => {
+				submitting = true;
+				return async ({ result, update }) => {
 					await update();
+					submitting = false;
 					if (result.type === 'success') {
 						open = false;
 						amount = undefined;
 					}
-				}}
+				};
+			}}
 		>
 			<div class="grid gap-2">
 				<Label for="incLabel">Keterangan</Label>
@@ -38,12 +43,23 @@
 			</div>
 			<div class="grid gap-2">
 				<Label for="incAmount">Nominal (Rp)</Label>
-				<Input id="incAmount" name="amount" type="number" min="1" inputmode="numeric" bind:value={amount} required />
+				<Input
+					id="incAmount"
+					name="amount"
+					type="number"
+					min="1"
+					inputmode="numeric"
+					bind:value={amount}
+					required
+				/>
 				{#if amount}<p class="text-xs text-muted-foreground">{formatRupiah(amount)}</p>{/if}
 			</div>
 			<div class="flex justify-end gap-2 pt-2">
-				<Button variant="outline" onclick={() => (open = false)}>Batal</Button>
-				<Button type="submit">Simpan</Button>
+				<Button variant="outline" onclick={() => (open = false)} disabled={submitting}>Batal</Button>
+				<Button type="submit" disabled={submitting}>
+					{#if submitting}<IconLoader2 class="animate-spin" />{/if}
+					Simpan
+				</Button>
 			</div>
 		</form>
 	</Dialog.Content>

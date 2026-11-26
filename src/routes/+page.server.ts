@@ -1,8 +1,8 @@
 import { fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
-import { getActiveCycle, getLatestCycle } from '$features/cycles/cycle.queries';
+import { getActiveCycle } from '$features/cycles/cycle.queries';
 import { needsNewCycle, startNewCycle } from '$features/cycles/cycle.service';
-import { getCycleSummary } from '$features/dashboard/dashboard.service';
+import { getActiveDashboardData } from '$features/dashboard/dashboard.service';
 import {
 	settleInstallment,
 	undoInstallment,
@@ -18,11 +18,10 @@ function readKind(form: FormData): InstallmentKind | null {
 }
 
 export const load: PageServerLoad = async () => {
-	const active = await getActiveCycle();
-	const latest = active ?? (await getLatestCycle());
+	const { active, latest, summary } = await getActiveDashboardData();
 
 	return {
-		summary: active ? await getCycleSummary(active) : null,
+		summary,
 		needsNewCycle: needsNewCycle(active),
 		isFirstCycle: !latest,
 		dueDay: latest?.dueDay ?? DEFAULT_DUE_DAY
@@ -42,13 +41,14 @@ export const actions: Actions = {
 		await startNewCycle({ dueDay, incomeLabel, incomeAmount });
 	},
 
-	// Bayar / lewati satu bagian tagihan (tagihan biasa = 1 bagian)
+	// Bayar / lewati satu bagian tagihan (mendukung penyesuaian nominal untuk tagihan fluktuatif)
 	settleBill: async ({ request }) => {
 		const form = await request.formData();
 		const id = readPositiveInt(form, 'id');
 		const kind = readKind(form);
+		const customAmount = readPositiveInt(form, 'customAmount');
 		if (!id || !kind) return fail(400, { message: 'Tagihan tidak valid.' });
-		await settleInstallment(id, kind);
+		await settleInstallment(id, kind, customAmount);
 	},
 
 	undoBill: async ({ request }) => {

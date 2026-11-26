@@ -63,7 +63,8 @@ export async function startNewCycle(input: {
 					name: ob.name,
 					amount: ob.amount,
 					dueDay: ob.dueDay,
-					installments: ob.installments
+					installments: ob.installments,
+					isVariable: ob.isVariable
 				}))
 			);
 		}
